@@ -27,22 +27,31 @@ import "./Board.css";
  *
  **/
 
-function Board({ nrows, ncols, chanceLightStartsOn }) {
+function Board({ nrows = 3, ncols = 3, chanceLightStartsOn }) {
   const [board, setBoard] = useState(createBoard());
 
   /** create a board nrows high/ncols wide, each cell randomly lit or unlit */
   function createBoard() {
-    let initialBoard = [];
+    let initialBoard = Array.from({ length: nrows });
     // TODO: create array-of-arrays of true/false values
+
+    for (let row in initialBoard) {
+      initialBoard[row] = [];
+      for (let x = 0; x < ncols; x++)
+        initialBoard[row].push(Math.random() > 0.5 ? true : false);
+    }
+
     return initialBoard;
   }
 
   function hasWon() {
     // TODO: check the board in state to determine whether the player has won.
+    return board.every(row => row.every(c => !c));
   }
 
   function flipCellsAround(coord) {
     setBoard(oldBoard => {
+
       const [y, x] = coord.split("-").map(Number);
 
       const flipCell = (y, x, boardCopy) => {
@@ -54,20 +63,46 @@ function Board({ nrows, ncols, chanceLightStartsOn }) {
       };
 
       // TODO: Make a (deep) copy of the oldBoard
+      const newBoard = oldBoard.slice();
 
       // TODO: in the copy, flip this cell and the cells around it
+      // cell itself
+      flipCell(y, x, newBoard);
+      // topCell
+      flipCell(y - 1, x, newBoard);
+      // bottomCell
+      flipCell(y + 1, x, newBoard);
+      // rightCell
+      flipCell(y, x + 1, newBoard);
+      // leftCell
+      flipCell(y, x - 1, newBoard);
 
       // TODO: return the copy
+      return newBoard;
+
     });
   }
 
+
   // if the game is won, just show a winning msg & render nothing else
+  if (hasWon()) {
+    return (<div>You've Won!</div>)
+  }
 
-  // TODO
+  return (
+    // make table board
+    < table className="Board" >
+      <tbody>
+        {board.map((row, idxR) =>
+          <tr key={idxR}>
+            {row.map((col, idxC) =>
+              <Cell key={`${idxR}-${idxC}`} flipCellsAroundMe={() => flipCellsAround(`${idxR}-${idxC}`)} isLit={col} />)}
+          </tr>
+        )}
+      </tbody>
+    </table >
+  )
 
-  // make table board
-
-  // TODO
 }
 
 export default Board;
